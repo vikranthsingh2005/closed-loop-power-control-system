@@ -1,36 +1,19 @@
 import numpy as np
-import pandas as pd
-from simulation import run_simulation
-from analysis.performance_metrics import calculate_overshoot, calculate_settling_time
 
-# Define parameter sweep ranges
-kp_values = [0.5, 1.0, 2.0, 3.0]
-ki_values = [0.1, 0.5, 1.0]
-kd_values = [0.0, 0.1]
 
-results = []
+def calculate_overshoot(response, target):
+    peak = np.max(response)
+    overshoot = ((peak - target) / target) * 100
+    return max(0, overshoot)
 
-for kp in kp_values:
-    for ki in ki_values:
-        for kd in kd_values:
-            t, v = run_simulation(kp=kp, ki=ki, kd=kd)
 
-            overshoot = calculate_overshoot(v, target=5.0)
-            settling_time = calculate_settling_time(t, v, target=5.0)
+def calculate_settling_time(time, response, target, tolerance=0.02):
+    lower_bound = target * (1 - tolerance)
+    upper_bound = target * (1 + tolerance)
 
-            results.append({
-                "Kp": kp,
-                "Ki": ki,
-                "Kd": kd,
-                "Overshoot (%)": overshoot,
-                "Settling Time (s)": settling_time
-            })
+    for i in range(len(response)):
+        if np.all((response[i:] >= lower_bound) &
+                  (response[i:] <= upper_bound)):
+            return time[i]
 
-# Convert to DataFrame
-results_df = pd.DataFrame(results)
-
-# Save to CSV
-results_df.to_csv("pid_sweep_results.csv", index=False)
-
-print("PID sweep completed.")
-print("Results saved to pid_sweep_results.csv")
+    return np.nan
