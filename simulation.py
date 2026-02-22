@@ -1,13 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
 from system_model.power_stage import DCPowerStage
 from control.pid_controller import PIDController
+
+
 def run_simulation(kp=5, ki=50, kd=0.01,
                    R=1.0, C=0.05,
                    setpoint=5.0,
                    dt=0.001,
                    t_end=1.0,
-                   plot=False):
+                   plot=False,
+                   save_plot=False):
 
     time = np.arange(0, t_end, dt)
 
@@ -30,12 +34,15 @@ def run_simulation(kp=5, ki=50, kd=0.01,
         plt.xlabel("Time (s)")
         plt.ylabel("Output Voltage (V)")
         plt.grid()
-        plt.savefig("voltage_response.png")
+
+        if save_plot:
+            plt.savefig("voltage_response.png")
+
         plt.show()
 
     return time, voltage_history
 
 
-# Allow standalone execution
+# When run directly, generate and save plot
 if __name__ == "__main__":
-    run_simulation(plot=True)
+    run_simulation(plot=True, save_plot=True)
